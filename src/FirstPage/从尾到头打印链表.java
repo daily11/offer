@@ -1,15 +1,8 @@
 package FirstPage;
 
+import util.ListNode;
+
 import java.util.ArrayList;
-
-class ListNode {
-    int val;
-    ListNode next = null;
-
-    ListNode(int val) {
-        this.val = val;
-    }
-}
 
 public class 从尾到头打印链表 {
     ArrayList list = new ArrayList();

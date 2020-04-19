@@ -1,16 +1,8 @@
 package FirstPage;
 
+import util.TreeNode;
+
 import java.util.Arrays;
-
-class TreeNode {
-    int val;
-    TreeNode left;
-    TreeNode right;
-
-    TreeNode(int x) {
-        val = x;
-    }
-}
 
 /**
  *
