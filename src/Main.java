@@ -1,14 +1,14 @@
 import util.ArrayUtil;
 
-import java.util.Arrays;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        Double[] arr = new Double[]{0.0, 11.0, 22.0, 33.0, 44.0, 55.0, 66.0, 77.0, 88.0};
-
-        System.out.println(arr.getClass());
-
-        Double d = 2.0;
-        System.out.println(d.getClass());
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        list.remove(list.size()-1);
+        System.out.println(list);
     }
 }
