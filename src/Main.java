@@ -4,11 +4,9 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.remove(list.size()-1);
-        System.out.println(list);
+        int[] arr = new int[]{1,2,3,2,2,2,5,4,2};
+        Arrays.sort(arr);
+        ArrayUtil.sop(arr);
+        System.out.println(arr[arr.length/2]);
     }
 }
