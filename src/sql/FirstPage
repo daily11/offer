@@ -1,3 +1,6 @@
+注意事项：
+（1）from_date：自始至终不会变，每次薪酬变化，都是to_date在变化！
+
 1 查找薪水涨幅超过15次的员工号emp_no以及其对应的涨幅次数t
   CREATE TABLE `salaries` (
   `emp_no` int(11) NOT NULL,
