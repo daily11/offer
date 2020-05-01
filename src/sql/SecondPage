@@ -15,7 +15,7 @@
   `to_date` date NOT NULL,
   PRIMARY KEY (`emp_no`,`from_date`));
 
-select a.emp_no, (b.salary - c.salary) as growth
+select a.emp_no, (b.salary - c.salary) as growthg
 from
     employees as a
     inner join salaries as b on a.emp_no = b.emp_no and b.to_date = '9999-01-01'
