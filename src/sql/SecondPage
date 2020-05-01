@@ -159,3 +159,29 @@ order by growth asc
 
 10 为已有表格新增列
   ALTER TABLE actor ADD COLUMN create_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00';
+
+11 更改已有表格的列名
+  ALTER TABLE titles_test RENAME TO titles_2017
+
+12 两表求交集
+  SELECT * FROM employees INTERSECT SELECT * FROM emp_v
+
+13 构造一个触发器audit_log，在向employees_test表中插入一条数据的时候，触发插入相关的数据到audit中。
+   CREATE TABLE employees_test(
+   ID INT PRIMARY KEY NOT NULL,
+   NAME TEXT NOT NULL,
+   AGE INT NOT NULL,
+   ADDRESS CHAR(50),
+   SALARY REAL
+   );
+   CREATE TABLE audit(
+   EMP_no INT NOT NULL,
+   NAME TEXT NOT NULL
+   );
+
+   可以使用 NEW与OLD 关键字访问触发后或触发前的employees_test表单记录
+
+   CREATE TRIGGER audit_log AFTER INSERT ON employees_test
+   BEGIN
+       INSERT INTO audit VALUES (NEW.ID, NEW.NAME);
+   END;
