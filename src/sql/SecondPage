@@ -101,4 +101,61 @@ order by growth asc
   	and salaries.to_date='9999-01-01'
   	and dept_emp.to_date='9999-01-01'
 
- 4
+ 4 查找描述信息中包括robot的电影对应的分类名称以及电影数目，而且还需要该分类对应电影数量>=5部
+ select category.name, count(film.film_id)
+ from film, category, film_category, (
+     select film_category.category_id from film_category
+     group by film_category.category_id
+     having count(film_category.category_id) >= 5
+ )as A
+ where description  like '%robot%'
+ and category.category_id = film_category.category_id
+ and film.film_id = film_category.film_id
+ and film_category.category_id = A.category_id
+
+5 对于表actor批量插入如下数据
+   CREATE TABLE IF NOT EXISTS actor (
+   actor_id smallint(5) NOT NULL PRIMARY KEY,
+   first_name varchar(45) NOT NULL,
+   last_name varchar(45) NOT NULL,
+   last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+
+   insert into 表名 values(数据1),(数据2)
+
+6 对于表actor批量插入如下数据,如果数据已经存在，请忽略，不使用replace操作
+  CREATE TABLE IF NOT EXISTS actor (
+  actor_id smallint(5) NOT NULL PRIMARY KEY,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+
+  INSERT OR IGNORE INTO actor
+  VALUES(3,'ED','CHASE','2006-02-15 12:34:33');
+
+7 创建一个表，数据源为另外一张表
+  drop table if exists actor_name;
+  create table actor_name (
+      first_name varchar(45) not null,
+      last_name varchar(45) not null
+  );
+  insert into actor_name
+  select first_name,last_name from actor;
+
+8 针对如下表actor结构创建索引：
+  CREATE TABLE IF NOT EXISTS actor (
+  actor_id smallint(5) NOT NULL PRIMARY KEY,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+  对first_name创建唯一索引uniq_idx_firstname，对last_name创建普通索引idx_lastname
+
+  CREATE UNIQUE INDEX uniq_idx_firstname ON actor(first_name);
+  CREATE INDEX idx_lastname ON actor(last_name);
+
+9 创建视图
+  create view t_v  as (
+  	select * from sys_role
+  )
+
+10 为已有表格新增列
+  ALTER TABLE actor ADD COLUMN create_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00';
