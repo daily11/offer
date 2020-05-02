@@ -8,5 +8,13 @@ public class Main {
         Arrays.sort(arr);
         ArrayUtil.sop(arr);
         System.out.println(arr[arr.length/2]);
+
+
+        String str = "A,B,C";
+
+        int len = str.length()-str.replace(",","").length();
+        System.out.println(len);
+
+
     }
 }

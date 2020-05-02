@@ -1,0 +1,187 @@
+1 题目描述
+  查找所有员工自入职以来的薪水涨幅情况，给出员工编号emp_no以及其对应的薪水涨幅growth，并按照growth进行升序
+  CREATE TABLE `employees` (
+  `emp_no` int(11) NOT NULL,
+  `birth_date` date NOT NULL,
+  `first_name` varchar(14) NOT NULL,
+  `last_name` varchar(16) NOT NULL,
+  `gender` char(1) NOT NULL,
+  `hire_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`));
+  CREATE TABLE `salaries` (
+  `emp_no` int(11) NOT NULL,
+  `salary` int(11) NOT NULL,
+  `from_date` date NOT NULL,
+  `to_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`,`from_date`));
+
+select a.emp_no, (b.salary - c.salary) as growthg
+from
+    employees as a
+    inner join salaries as b on a.emp_no = b.emp_no and b.to_date = '9999-01-01'
+    inner join salaries as c on a.emp_no = c.emp_no and a.hire_date = c.from_date
+order by growth asc
+
+2 对所有员工的当前(to_date='9999-01-01')薪水按照salary进行按照1-N的排名，相同salary并列且按照emp_no升序排列
+  CREATE TABLE `salaries` (
+  `emp_no` int(11) NOT NULL,
+  `salary` int(11) NOT NULL,
+  `from_date` date NOT NULL,
+  `to_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`,`from_date`));
+
+  本题的主要思想是复用salaries表进行比较排名，具体思路如下：
+  (1)、从两张相同的salaries表（分别为s1与s2）进行对比分析，先将两表限定条件设为to_date = '9999-01-01'，挑选出当前所有员工的薪水情况。
+  (2)、本题的精髓在于 s1.salary <= s2.salary，意思是在输出s1.salary的情况下，有多少个s2.salary大于等于s1.salary，比如当s1.salary=94409时，有3个s2.salary（分别为94692,94409,94409）大于等于它，但由于94409重复，利用COUNT(DISTINCT s2.salary)去重可得工资为94409的rank等于2。其余排名以此类推。
+  (3)、千万不要忘了GROUP BY s1.emp_no，否则输出的记录只有一条（可能是第一条或者最后一条，根据不同的数据库而定），因为用了合计函数COUNT()
+  (4)、最后先以 s1.salary 逆序排列，再以 s1.emp_no 顺序排列输出结果
+
+  SELECT
+  	s1.emp_no,
+  	s1.salary,
+  	COUNT(DISTINCT s2.salary) AS rank
+  FROM
+  	salaries AS s1,
+  	salaries AS s2
+  WHERE
+  	s1.to_date = '9999-01-01'
+  	AND s2.to_date = '9999-01-01'
+  	AND s1.salary <= s2.salary
+  GROUP BY
+  	s1.emp_no
+  ORDER BY
+  	s1.salary DESC,
+  	s1.emp_no ASC
+
+3 获取所有非manager员工当前的薪水情况，给出dept_no、emp_no以及salary ，当前表示to_date='9999-01-01'
+  表说明：dept_emp（员工-部门），dept_manager（员工-经理）
+  CREATE TABLE `dept_emp` (
+  `emp_no` int(11) NOT NULL,
+  `dept_no` char(4) NOT NULL,
+  `from_date` date NOT NULL,
+  `to_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`,`dept_no`));
+
+  CREATE TABLE `dept_manager` (
+  `dept_no` char(4) NOT NULL,
+  `emp_no` int(11) NOT NULL,
+  `from_date` date NOT NULL,
+  `to_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`,`dept_no`));
+
+  CREATE TABLE `employees` (
+  `emp_no` int(11) NOT NULL,
+  `birth_date` date NOT NULL,
+  `first_name` varchar(14) NOT NULL,
+  `last_name` varchar(16) NOT NULL,
+  `gender` char(1) NOT NULL,
+  `hire_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`));
+
+  CREATE TABLE `salaries` (
+  `emp_no` int(11) NOT NULL,
+  `salary` int(11) NOT NULL,
+  `from_date` date NOT NULL,
+  `to_date` date NOT NULL,
+  PRIMARY KEY (`emp_no`,`from_date`));
+
+
+  select
+  	dept_emp.dept_no,
+  	employees.emp_no,
+  	salaries.salary
+  from
+  	employees
+  inner join dept_emp on dept_emp.emp_no = employees.emp_no
+  inner join salaries on salaries.emp_no = dept_emp.emp_no
+  where
+  	employees.emp_no not in (
+  		select dept_manager.emp_no from dept_manager where dept_manager.to_date='9999-01-01'
+  	)
+  	and salaries.to_date='9999-01-01'
+  	and dept_emp.to_date='9999-01-01'
+
+ 4 查找描述信息中包括robot的电影对应的分类名称以及电影数目，而且还需要该分类对应电影数量>=5部
+ select category.name, count(film.film_id)
+ from film, category, film_category, (
+     select film_category.category_id from film_category
+     group by film_category.category_id
+     having count(film_category.category_id) >= 5
+ )as A
+ where description  like '%robot%'
+ and category.category_id = film_category.category_id
+ and film.film_id = film_category.film_id
+ and film_category.category_id = A.category_id
+
+5 对于表actor批量插入如下数据
+   CREATE TABLE IF NOT EXISTS actor (
+   actor_id smallint(5) NOT NULL PRIMARY KEY,
+   first_name varchar(45) NOT NULL,
+   last_name varchar(45) NOT NULL,
+   last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+
+   insert into 表名 values(数据1),(数据2)
+
+6 对于表actor批量插入如下数据,如果数据已经存在，请忽略，不使用replace操作
+  CREATE TABLE IF NOT EXISTS actor (
+  actor_id smallint(5) NOT NULL PRIMARY KEY,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+
+  INSERT OR IGNORE INTO actor
+  VALUES(3,'ED','CHASE','2006-02-15 12:34:33');
+
+7 创建一个表，数据源为另外一张表
+  drop table if exists actor_name;
+  create table actor_name (
+      first_name varchar(45) not null,
+      last_name varchar(45) not null
+  );
+  insert into actor_name
+  select first_name,last_name from actor;
+
+8 针对如下表actor结构创建索引：
+  CREATE TABLE IF NOT EXISTS actor (
+  actor_id smallint(5) NOT NULL PRIMARY KEY,
+  first_name varchar(45) NOT NULL,
+  last_name varchar(45) NOT NULL,
+  last_update timestamp NOT NULL DEFAULT (datetime('now','localtime')))
+  对first_name创建唯一索引uniq_idx_firstname，对last_name创建普通索引idx_lastname
+
+  CREATE UNIQUE INDEX uniq_idx_firstname ON actor(first_name);
+  CREATE INDEX idx_lastname ON actor(last_name);
+
+9 创建视图
+  create view t_v  as (
+  	select * from sys_role
+  )
+
+10 为已有表格新增列
+  ALTER TABLE actor ADD COLUMN create_date datetime NOT NULL DEFAULT '0000-00-00 00:00:00';
+
+11 更改已有表格的列名
+  ALTER TABLE titles_test RENAME TO titles_2017
+
+12 两表求交集
+  SELECT * FROM employees INTERSECT SELECT * FROM emp_v
+
+13 构造一个触发器audit_log，在向employees_test表中插入一条数据的时候，触发插入相关的数据到audit中。
+   CREATE TABLE employees_test(
+   ID INT PRIMARY KEY NOT NULL,
+   NAME TEXT NOT NULL,
+   AGE INT NOT NULL,
+   ADDRESS CHAR(50),
+   SALARY REAL
+   );
+   CREATE TABLE audit(
+   EMP_no INT NOT NULL,
+   NAME TEXT NOT NULL
+   );
+
+   可以使用 NEW与OLD 关键字访问触发后或触发前的employees_test表单记录
+
+   CREATE TRIGGER audit_log AFTER INSERT ON employees_test
+   BEGIN
+       INSERT INTO audit VALUES (NEW.ID, NEW.NAME);
+   END;
