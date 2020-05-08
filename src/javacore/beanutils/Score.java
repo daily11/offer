@@ -3,6 +3,8 @@ package javacore.beanutils;
 public class Score {
     private String className;
     private Integer score;
+    private Integer hardType;//难易程度
+    private String hardTypeName;
 
     public Score() {
     }
@@ -28,11 +30,19 @@ public class Score {
         this.score = score;
     }
 
-    @Override
-    public String toString() {
-        return "Score{" +
-                "className='" + className + '\'' +
-                ", score=" + score +
-                '}';
+    public Integer getHardType() {
+        return hardType;
+    }
+
+    public void setHardType(Integer hardType) {
+        this.hardType = hardType;
+    }
+
+    public String getHardTypeName() {
+        return hardTypeName;
+    }
+
+    public void setHardTypeName(String hardTypeName) {
+        this.hardTypeName = hardTypeName;
     }
 }

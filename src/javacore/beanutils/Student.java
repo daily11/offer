@@ -5,7 +5,10 @@ import java.util.List;
 public class Student {
     private String name;
     private Integer age;
+    private Integer countryType;//国家类型
     private List<Score> list;
+
+    private String countryTypeName;
 
     public String getName() {
         return name;
@@ -31,12 +34,19 @@ public class Student {
         this.list = list;
     }
 
-    @Override
-    public String toString() {
-        return "Student{" +
-                "name='" + name + '\'' +
-                ", age=" + age +
-                ", list=" + list +
-                '}';
+    public Integer getCountryType() {
+        return countryType;
+    }
+
+    public void setCountryType(Integer countryType) {
+        this.countryType = countryType;
+    }
+
+    public String getCountryTypeName() {
+        return countryTypeName;
+    }
+
+    public void setCountryTypeName(String countryTypeName) {
+        this.countryTypeName = countryTypeName;
     }
 }
