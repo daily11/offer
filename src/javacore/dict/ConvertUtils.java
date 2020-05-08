@@ -7,6 +7,8 @@ import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.*;
 
 public class ConvertUtils {
@@ -17,43 +19,151 @@ public class ConvertUtils {
 
         convert(student, dictInfoMap);
 
-        System.out.println("hhh");
+        System.out.println("字典切面编程介绍！");
     }
 
     private static void convert(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
         if (orig instanceof Map) {
-
+            injectMap((Map<String, Object>) orig, dictInfoMap);
         } else if (orig instanceof List) {
-
+            injectList((List) orig, dictInfoMap);
         } else {
-            Class clazz = orig.getClass();
-            BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
-            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-            for (int i = 0; i < descriptors.length; i++) {
-                PropertyDescriptor propertyDescriptor = descriptors[i];
-                String name = propertyDescriptor.getName();
-                if ("class".equals(name)) {
-                    continue; // No point in trying to set an object's class
+            injectJavaBean(orig, dictInfoMap);
+        }
+    }
+
+    private static void injectList(List tmpOrigList, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+        if (tmpOrigList != null) {
+            for (Object orig : tmpOrigList) {
+                Class clazz = orig.getClass();
+                if (clazz.isAssignableFrom(List.class) || clazz.isAssignableFrom(ArrayList.class)) {
+                    injectList((List) orig, dictInfoMap);
+                    continue;
+                } else if (clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom((HashMap.class))) {
+                    injectMap((Map) orig, dictInfoMap);
+                    continue;
+                } else if (clazz.isAssignableFrom(String.class)) {
+                    break;
+                } else if (clazz.isAssignableFrom(Integer.class)) {
+                    break;
+                } else if (clazz.isAssignableFrom(Double.class)) {
+                    break;
+                } else if (clazz.isAssignableFrom(Float.class)) {
+                    break;
+                } else if (clazz.isAssignableFrom(BigDecimal.class)) {
+                    break;
+                } else {
+                    injectJavaBean(orig, dictInfoMap);
+                    continue;
                 }
+            }
+        }
+    }
+
+    private static void injectMap(Map<String, Object> tmpOrigMap, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+        if (tmpOrigMap != null) {
+            Map<String, Object> newOrigMap = new HashMap<>(tmpOrigMap);
+            for (Map.Entry<String, Object> entry : newOrigMap.entrySet()) {
+                String name = entry.getKey();
+                Object orig = entry.getValue();
+                Class clazz = orig.getClass();
+
+                if (clazz.isAssignableFrom(List.class) || clazz.isAssignableFrom(ArrayList.class)) {
+                    injectList((List) orig, dictInfoMap);
+                    continue;
+                } else if (clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom((HashMap.class))) {
+                    injectMap((Map) orig, dictInfoMap);
+                    continue;
+                } else if (clazz.isAssignableFrom(String.class)) {
+                } else if (clazz.isAssignableFrom(Integer.class)) {
+                } else if (clazz.isAssignableFrom(Double.class)) {
+                } else if (clazz.isAssignableFrom(Float.class)) {
+                } else if (clazz.isAssignableFrom(BigDecimal.class)) {
+                } else {
+                    injectJavaBean(orig, dictInfoMap);
+                    continue;
+                }
+
                 // 查看属性name在字典表中是否存在
                 Map<Integer, String> dictFieldMap = existFieldInDict(name, dictInfoMap);
-                if(dictFieldMap!=null){
-                    for (int j = 0; j < descriptors.length; j++) {
-                        String noNameStr = descriptors[j].getName().replace("Name","");
-                        if(name.equals(noNameStr) && name.length()<descriptors[j].getName().length()) {
-                            // 获取orig中key对应的值value
-                            Method readMethod = propertyDescriptor.getReadMethod();
-                            Object key = readMethod.invoke(orig, null);
-                            // (name+Name属性)注入值
-                            Method writeMethod = descriptors[j].getWriteMethod();
+                if (dictFieldMap != null) {
+                    if (orig instanceof Integer) {
+                        tmpOrigMap.put(name + "Name", dictFieldMap.get(orig));
+                    }
+                }
+            }
+        }
+    }
+
+    private static void injectJavaBean(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+        Class clazz = orig.getClass();
+        BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
+        PropertyDescriptor[] origPds = beanInfo.getPropertyDescriptors();
+        int origPdsLen = origPds.length;
+        for (int i = 0; i < origPdsLen; i++) {
+            PropertyDescriptor origPd = origPds[i];
+            String name = origPd.getName();
+            if ("class".equals(name)) {
+                continue; // No point in trying to set an object's class
+            }
+            Class typeClazz = origPd.getPropertyType();
+            if (typeClazz.isAssignableFrom(List.class) || typeClazz.isAssignableFrom(ArrayList.class)) {
+                Method readMethod = origPd.getReadMethod();
+                setAccessible(readMethod);
+                List tmpOrig = (List) readMethod.invoke(orig, null);
+                injectList(tmpOrig, dictInfoMap);
+                continue;
+            } else if (typeClazz.isAssignableFrom(Map.class) || typeClazz.isAssignableFrom((HashMap.class))) {
+                Method readMethod = origPd.getReadMethod();
+                setAccessible(readMethod);
+                Map tmpOrig = (Map) readMethod.invoke(orig, null);
+                injectMap(tmpOrig, dictInfoMap);
+                continue;
+            } else if (typeClazz.isAssignableFrom(String.class)) {
+
+            } else if (typeClazz.isAssignableFrom(Integer.class)) {
+
+            } else if (typeClazz.isAssignableFrom(Double.class)) {
+
+            } else if (typeClazz.isAssignableFrom(Float.class)) {
+
+            } else if (typeClazz.isAssignableFrom(BigDecimal.class)) {
+
+            } else {
+                Method readMethod = origPd.getReadMethod();
+                setAccessible(readMethod);
+                Object tmpOrig = readMethod.invoke(orig, null);
+                injectJavaBean(tmpOrig, dictInfoMap);
+                continue;
+            }
+
+            // 查看属性name在字典表中是否存在
+            Map<Integer, String> dictFieldMap = existFieldInDict(name, dictInfoMap);
+            if (dictFieldMap != null) {
+                for (int j = 0; j < origPdsLen; j++) {
+                    PropertyDescriptor destPd = origPds[j];
+                    String noNameStr = destPd.getName().replace("Name", "");
+                    if (name.equals(noNameStr) && name.length() < destPd.getName().length()) {
+                        // 获取orig中key对应的值value
+                        Method readMethod = origPd.getReadMethod();
+                        setAccessible(readMethod);
+                        Object key = readMethod.invoke(orig, null);
+                        // (name+Name属性)注入值
+                        Method writeMethod = destPd.getWriteMethod();
+                        setAccessible(writeMethod);
+                        if (key instanceof Integer) {
                             String value = dictFieldMap.get(key);
-                            writeMethod.invoke(orig,value);
+                            writeMethod.invoke(orig, value);
                         }
                     }
                 }
-
-
             }
+        }
+    }
+
+    private static void setAccessible(Method method) {
+        if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
+            method.setAccessible(true);
         }
     }
 
@@ -123,7 +233,18 @@ public class ConvertUtils {
         list.add(score1);
         list.add(score2);
 
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        Map<String, Object> map1 = new HashMap<>();
+        map1.put("country_type", 1000);
+        map1.put("hard_type", 2001);
+        mapList.add(map1);
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("country_type", 1001);
+        map2.put("hard_type", 2000);
+        mapList.add(map2);
+
         student.setList(list);
+        student.setMapList(mapList);
 
         return dictInfoMap;
     }

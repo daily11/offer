@@ -1,13 +1,15 @@
 package javacore.beanutils;
 
 import java.util.List;
+import java.util.Map;
 
 public class Student {
     private String name;
     private Integer age;
     private Integer countryType;//国家类型
     private List<Score> list;
-
+    private List<Student> studentList;
+    private List<Map<String,Object>> mapList;
     private String countryTypeName;
 
     public String getName() {
@@ -48,5 +50,21 @@ public class Student {
 
     public void setCountryTypeName(String countryTypeName) {
         this.countryTypeName = countryTypeName;
+    }
+
+    public List<Student> getStudentList() {
+        return studentList;
+    }
+
+    public void setStudentList(List<Student> studentList) {
+        this.studentList = studentList;
+    }
+
+    public List<Map<String, Object>> getMapList() {
+        return mapList;
+    }
+
+    public void setMapList(List<Map<String, Object>> mapList) {
+        this.mapList = mapList;
     }
 }
