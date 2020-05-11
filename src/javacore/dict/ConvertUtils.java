@@ -2,7 +2,6 @@ package javacore.dict;
 
 import javacore.beanutils.Score;
 import javacore.beanutils.Student;
-
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -12,17 +11,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class ConvertUtils {
-    public static void main(String[] args) throws Exception {
-        Student student = new Student();
-        //<种类，<类型码，类型名>>
-        Map<String, Map<Integer, String>> dictInfoMap = initData(student);
-
-        convert(student, dictInfoMap);
-
-        System.out.println("字典切面编程介绍！");
-    }
-
-    private static void convert(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+    public void convert(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
         if (orig instanceof Map) {
             injectMap((Map<String, Object>) orig, dictInfoMap);
         } else if (orig instanceof List) {
@@ -32,35 +21,29 @@ public class ConvertUtils {
         }
     }
 
-    private static void injectList(List tmpOrigList, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+    private void injectList(List tmpOrigList, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
         if (tmpOrigList != null) {
             for (Object orig : tmpOrigList) {
                 Class clazz = orig.getClass();
-                if (clazz.isAssignableFrom(List.class) || clazz.isAssignableFrom(ArrayList.class)) {
-                    injectList((List) orig, dictInfoMap);
-                    continue;
-                } else if (clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom((HashMap.class))) {
-                    injectMap((Map) orig, dictInfoMap);
-                    continue;
-                } else if (clazz.isAssignableFrom(String.class)) {
-                    break;
-                } else if (clazz.isAssignableFrom(Integer.class)) {
-                    break;
-                } else if (clazz.isAssignableFrom(Double.class)) {
-                    break;
-                } else if (clazz.isAssignableFrom(Float.class)) {
-                    break;
-                } else if (clazz.isAssignableFrom(BigDecimal.class)) {
+                if (isBaseAssignableFromClazz(clazz)) {
                     break;
                 } else {
-                    injectJavaBean(orig, dictInfoMap);
-                    continue;
+                    if (List.class.isAssignableFrom(clazz)) {
+                        injectList((List) orig, dictInfoMap);
+                        continue;
+                    } else if (Map.class.isAssignableFrom(clazz)) {
+                        injectMap((Map) orig, dictInfoMap);
+                        continue;
+                    } else {
+                        injectJavaBean(orig, dictInfoMap);
+                        continue;
+                    }
                 }
             }
         }
     }
 
-    private static void injectMap(Map<String, Object> tmpOrigMap, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+    private void injectMap(Map<String, Object> tmpOrigMap, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
         if (tmpOrigMap != null) {
             Map<String, Object> newOrigMap = new HashMap<>(tmpOrigMap);
             for (Map.Entry<String, Object> entry : newOrigMap.entrySet()) {
@@ -68,21 +51,20 @@ public class ConvertUtils {
                 Object orig = entry.getValue();
                 Class clazz = orig.getClass();
 
-                if (clazz.isAssignableFrom(List.class) || clazz.isAssignableFrom(ArrayList.class)) {
-                    injectList((List) orig, dictInfoMap);
-                    continue;
-                } else if (clazz.isAssignableFrom(Map.class) || clazz.isAssignableFrom((HashMap.class))) {
-                    injectMap((Map) orig, dictInfoMap);
-                    continue;
-                } else if (clazz.isAssignableFrom(String.class)) {
-                } else if (clazz.isAssignableFrom(Integer.class)) {
-                } else if (clazz.isAssignableFrom(Double.class)) {
-                } else if (clazz.isAssignableFrom(Float.class)) {
-                } else if (clazz.isAssignableFrom(BigDecimal.class)) {
+                if (isBaseAssignableFromClazz(clazz)) {
                 } else {
-                    injectJavaBean(orig, dictInfoMap);
-                    continue;
+                    if (List.class.isAssignableFrom(clazz)) {
+                        injectList((List) orig, dictInfoMap);
+                        continue;
+                    } else if (Map.class.isAssignableFrom(clazz)) {
+                        injectMap((Map) orig, dictInfoMap);
+                        continue;
+                    } else {
+                        injectJavaBean(orig, dictInfoMap);
+                        continue;
+                    }
                 }
+
 
                 // 查看属性name在字典表中是否存在
                 Map<Integer, String> dictFieldMap = existFieldInDict(name, dictInfoMap);
@@ -95,7 +77,7 @@ public class ConvertUtils {
         }
     }
 
-    private static void injectJavaBean(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
+    private void injectJavaBean(Object orig, Map<String, Map<Integer, String>> dictInfoMap) throws Exception {
         Class clazz = orig.getClass();
         BeanInfo beanInfo = Introspector.getBeanInfo(clazz);
         PropertyDescriptor[] origPds = beanInfo.getPropertyDescriptors();
@@ -107,35 +89,29 @@ public class ConvertUtils {
                 continue; // No point in trying to set an object's class
             }
             Class typeClazz = origPd.getPropertyType();
-            if (typeClazz.isAssignableFrom(List.class) || typeClazz.isAssignableFrom(ArrayList.class)) {
-                Method readMethod = origPd.getReadMethod();
-                setAccessible(readMethod);
-                List tmpOrig = (List) readMethod.invoke(orig, null);
-                injectList(tmpOrig, dictInfoMap);
-                continue;
-            } else if (typeClazz.isAssignableFrom(Map.class) || typeClazz.isAssignableFrom((HashMap.class))) {
-                Method readMethod = origPd.getReadMethod();
-                setAccessible(readMethod);
-                Map tmpOrig = (Map) readMethod.invoke(orig, null);
-                injectMap(tmpOrig, dictInfoMap);
-                continue;
-            } else if (typeClazz.isAssignableFrom(String.class)) {
-
-            } else if (typeClazz.isAssignableFrom(Integer.class)) {
-
-            } else if (typeClazz.isAssignableFrom(Double.class)) {
-
-            } else if (typeClazz.isAssignableFrom(Float.class)) {
-
-            } else if (typeClazz.isAssignableFrom(BigDecimal.class)) {
-
+            if (isBaseAssignableFromClazz(typeClazz)) {
             } else {
-                Method readMethod = origPd.getReadMethod();
-                setAccessible(readMethod);
-                Object tmpOrig = readMethod.invoke(orig, null);
-                injectJavaBean(tmpOrig, dictInfoMap);
-                continue;
+                if (List.class.isAssignableFrom(typeClazz)) {
+                    Method readMethod = origPd.getReadMethod();
+                    setAccessible(readMethod);
+                    List tmpOrig = (List) readMethod.invoke(orig, null);
+                    injectList(tmpOrig, dictInfoMap);
+                    continue;
+                } else if (Map.class.isAssignableFrom(typeClazz)) {
+                    Method readMethod = origPd.getReadMethod();
+                    setAccessible(readMethod);
+                    Map tmpOrig = (Map) readMethod.invoke(orig, null);
+                    injectMap(tmpOrig, dictInfoMap);
+                    continue;
+                } else {
+                    Method readMethod = origPd.getReadMethod();
+                    setAccessible(readMethod);
+                    Object tmpOrig = readMethod.invoke(orig, null);
+                    injectJavaBean(tmpOrig, dictInfoMap);
+                    continue;
+                }
             }
+
 
             // 查看属性name在字典表中是否存在
             Map<Integer, String> dictFieldMap = existFieldInDict(name, dictInfoMap);
@@ -161,13 +137,47 @@ public class ConvertUtils {
         }
     }
 
-    private static void setAccessible(Method method) {
+    /**
+     * 判断clazz是否是java数据类型类的 接口或者类的 子类
+     *
+     * @param clazz 待判断的类类型
+     * @return
+     */
+    private boolean isBaseAssignableFromClazz(Class clazz) {
+        boolean flag = false;
+        if (clazz.isAssignableFrom(String.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Integer.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Double.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Long.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Float.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(BigDecimal.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Date.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Boolean.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Character.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Short.class)) {
+            flag = true;
+        } else if (clazz.isAssignableFrom(Byte.class)) {
+            flag = true;
+        }
+        return flag;
+    }
+
+    private void setAccessible(Method method) {
         if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) {
             method.setAccessible(true);
         }
     }
 
-    private static Map<Integer, String> existFieldInDict(String name, Map<String, Map<Integer, String>> dictInfoMap) {
+    private Map<Integer, String> existFieldInDict(String name, Map<String, Map<Integer, String>> dictInfoMap) {
         Set<String> set = dictInfoMap.keySet();
         if (set.contains(name)) {
             return dictInfoMap.get(name);
