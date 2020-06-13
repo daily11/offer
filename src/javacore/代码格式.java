@@ -1,3 +1,5 @@
+package javacore;
+
 public class 代码格式 {
     public static void main(String[] args) {
         int[] arr = new int[]{3, 2, 8, 1};
