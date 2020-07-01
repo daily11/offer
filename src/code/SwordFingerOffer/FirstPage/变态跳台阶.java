@@ -6,10 +6,10 @@ package code.SwordFingerOffer.FirstPage;
  *
  * f(n)=f(n-1)+f(n-2)+...+f(n-(n-1))+2+1
  * f(n-1)=f(n-2)+...+2+1
- * 退出下述公式：
- *          | 1       ,(n=0 )
- * f(n) =   | 1       ,(n=1 )
- *          | 2*f(n-1),(n>=2)
+ * 推出下述公式：
+ *          | 1       , (n=0 )
+ * f(n) =   | 1       , (n=1 )
+ *          | 2*f(n-1), (n>=2)
  *
  */
 public class 变态跳台阶 {

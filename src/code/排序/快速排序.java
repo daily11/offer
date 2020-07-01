@@ -43,9 +43,11 @@ public class 快速排序 {
                 }
             }
             if (lf_idx >= rg_idx) {
+                // 转换d[lf]与d[rg_idx]的值
                 int tmp = data[lf];
                 data[lf] = data[rg_idx];
                 data[rg_idx] = tmp;
+
                 // 递归左侧快速排序
                 sort(data, lf, rg_idx - 1);
                 // 递归右侧快速排序

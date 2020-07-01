@@ -1,5 +1,8 @@
 package code.查找;
 
+/**
+ * 前提：待排序的数组已经是有序的！
+ */
 public class 二分查找法 {
 
     public static void main(String[] args) {

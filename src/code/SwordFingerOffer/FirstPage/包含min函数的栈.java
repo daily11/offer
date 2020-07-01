@@ -3,6 +3,9 @@ package code.SwordFingerOffer.FirstPage;
 import java.util.Iterator;
 import java.util.Stack;
 
+/**
+ * 题意：插入、弹出、查看最顶层元素，这些函数都不变，只复写一个min函数
+ */
 public class 包含min函数的栈 {
     Stack<Integer> stack = new Stack<Integer>();
 

@@ -16,8 +16,8 @@ import java.util.Stack;
  * 如果 stack2 为空，将 stack1 中的全部数逐个出栈入栈 stack2，再弹出 stack2 栈顶元素
  */
 public class 用两个栈实现队列 {
-    Stack<Integer> stack1 = new Stack<Integer>();
-    Stack<Integer> stack2 = new Stack<Integer>();
+    Stack<Integer> stack1 = new Stack<>();
+    Stack<Integer> stack2 = new Stack<>();
 
     public void push(int node) {
         stack1.push(node);
