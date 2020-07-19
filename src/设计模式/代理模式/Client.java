@@ -1,9 +1,9 @@
-package javacore.动态代理;
+package 设计模式.代理模式;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
-public class Main {
+public class Client {
     public static void main(String[] args) {
         // 被代理的对象是userDao
         UserDao userDao = new UserDao();
